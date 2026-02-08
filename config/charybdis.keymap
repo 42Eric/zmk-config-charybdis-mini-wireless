@@ -13,9 +13,15 @@
     trackball_listener {
         compatible = "zmk,input-listener";
         device = <&trackball>;
-        input-processors = <&zip_xy_scaler 1 2>, <&zip_temp_layer 4 400>; // Switch to auto-mouse temp layer, decrease sensitivity
+        /* Default pointer mode:
+         * - Slightly reduced sensitivity
+         * - Automatically activates the AUTO-MOUSE temp layer when the trackball moves
+         */
+        input-processors = <&zip_xy_scaler 1 2>, <&zip_temp_layer 6 400>;
+
+        /* Scroll mode: hold the layer-4 (SCROLL) layer while moving the trackball */
         scroll {
-            layers = <5>; // SCROLL
+            layers = <4>; // SCROLL
             input-processors = <&zip_xy_scaler 1 5>, <&zip_xy_to_scroll_mapper>, <&zip_scroll_transform (INPUT_TRANSFORM_Y_INVERT)>;
         };
     };
@@ -112,57 +118,76 @@
     keymap {
         compatible = "zmk,keymap";
 
+        /* Layer indices (kept aligned to repo_2's logical mapping):
+         * 0 BASE
+         * 1 LAYER_1 (symbols/num/navigation)
+         * 2 LAYER_2 (symbols/navigation)
+         * 3 MOUSE
+         * 4 SCROLL
+         * 5 FINE
+         * 6 AUTO-MOUSE (repo_1 advanced feature: temp layer on trackball movement)
+         */
+
         BASE {
             bindings = <
-&kp ESC  &kp Q             &kp W             &kp E          &kp R               &kp T    &kp Y  &kp U               &kp I          &kp O              &kp P                 &kp BSPC
-&kp TAB  &u_mt LEFT_GUI A  &u_mt LEFT_ALT S  &u_mt LCTRL D  &u_mt LEFT_SHIFT F  &kp G    &kp H  &u_mt LEFT_SHIFT J  &u_mt RCTRL K  &u_mt RIGHT_ALT L  &u_mt RIGHT_GUI SEMI  &kp APOS
-&mo 5    &kp Z             &kp X             &kp C          &kp V               &kp B    &kp N  &kp M               &kp COMMA      &kp DOT            &kp FSLH              &mo 5
-                                             &kp LGUI       &kp SPACE           &mo 1    &mo 2  &kp RET
+&kp TAB            &kp Q             &kp W             &kp E          &kp R               &kp T    &kp Y  &kp U               &kp I          &kp O              &kp P            &kp DEL
+&kp LEFT_SHIFT     &u_mt LEFT_GUI A  &u_mt LEFT_ALT S  &u_mt LCTRL D  &u_mt LEFT_SHIFT F  &kp G    &kp H  &u_mt LEFT_SHIFT J  &u_mt RCTRL K  &u_mt RIGHT_ALT L  &u_mt RIGHT_GUI SEMI  &kp APOS
+&kp LCTRL          &u_lt 3 Z         &kp X             &kp C          &kp V               &kp B    &kp N  &kp M               &kp COMMA      &kp DOT            &u_lt 4 FSLH      &kp RIGHT_ALT
+                                               &kp LGUI            &kp SPACE           &u_lt 1 BSPC    &u_lt 2 ESC  &kp RET
             >;
         };
 
-        NAV {
+        LAYER_1 {
             bindings = <
-&trans  &trans    &kp UP    &trans     &trans  &trans    &kp N7           &kp N8                &kp N9          &kp N0  &kp HOME  &kp F1
-&trans  &kp LEFT  &kp DOWN  &kp RIGHT  &trans  &trans    &kp N4           &u_mt RIGHT_SHIFT N5  &u_mt RCTRL N6  &trans  &trans    &kp F10
-&trans  &trans    &trans    &trans     &trans  &trans    &kp N1           &kp N2                &kp N3          &trans  &trans    &kp F20
-                            &trans     &trans  &trans    &lt 3 BACKSPACE  &kp LSHFT
+&kp GRAVE  &kp N1     &kp N2     &kp N3     &kp N4     &kp N5     &kp N6     &kp N7     &kp N8     &kp N9     &kp N0     &kp DEL
+&trans     &kp N5     &kp N6     &kp N7     &kp N8     &bt BT_PRV  &kp BSLH   &kp DOWN   &kp UP     &kp F7     &kp F8     &kp PAGE_UP
+&trans     &kp N9     &kp N0     &kp MINUS  &kp EQUAL  &kp LBKT   &kp RBKT   &kp LEFT   &kp RIGHT  &kp F11    &kp F12    &kp PAGE_DOWN
+                               &kp LGUI    &kp SPACE  &trans      &kp RET    &kp BSPC
             >;
         };
 
-        SYMNUM {
+        LAYER_2 {
             bindings = <
-&bt BT_CLR  &kp EXCL      &kp AT       &kp HASH    &kp DLLR  &kp PRCNT    &kp CARET  &kp AMPS                 &kp KP_MULTIPLY   &kp LPAR              &kp RPAR              &kp DEL
-&studio_unlock      &trans        &bt BT_PRV   &bt BT_NXT  &trans    &trans       &kp UNDER  &u_mt RIGHT_SHIFT EQUAL  &u_mt RCTRL LBKT  &u_mt RIGHT_ALT RBKT  &u_mt RIGHT_GUI BSLH  &kp GRAVE
-&trans      &out OUT_TOG  &bootloader  &trans      &trans    &trans       &kp MINUS  &kp PLUS                 &kp LBRC          &kp RBRC              &kp PIPE              &kp TILDE
-                                       &trans      &trans    &mo 3        &trans     &trans
+&kp F4     &kp EXCL   &kp AT      &kp HASH   &kp DLLR   &kp PRCNT  &kp CARET  &kp AMPS   &kp KP_MULTIPLY  &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &kp UNDER
+&kp TILDE  &kp LS(N5) &kp LS(N6)  &kp LS(N7) &kp LS(N8) &bt BT_NXT  &kp LS(BSLH)  &trans   &kp UP     &trans    &trans    &trans
+&kp LEFT_SHIFT  &kp LS(N9) &kp LS(N0) &kp LS(MINUS) &kp LS(EQUAL)  &none  &none  &kp LEFT  &kp DOWN  &kp RIGHT  &none  &trans
+                                 &kp LEFT_ALT  &kp SPACE  &kp RET  &trans  &kp BSPC
             >;
         };
 
-        FUN {
+        MOUSE {
             bindings = <
-&trans  &trans   &kp F1  &kp F2   &kp F3   &kp F4     &bt BT_SEL 0  &bt BT_SEL 1      &bt BT_SEL 2       &bt BT_SEL 3     &bt BT_SEL 4  &bt BT_CLR
-&trans  &kp DEL  &kp F5  &kp F6   &kp F7   &kp F8     &out OUT_TOG  &kp K_PLAY_PAUSE  &kp C_VOLUME_DOWN  &kp C_VOLUME_UP  &kp C_MUTE    &kp LALT
-&trans  &trans   &kp F9  &kp F10  &kp F11  &kp F12    &trans        &trans            &trans             &trans           &trans        &to 0
-                         &trans   &trans   &trans     &trans        &trans
-            >;
-        };
-
-        AUTO-MOUSE {
-            bindings = <
-&trans  &trans  &trans  &trans     &trans  &trans       &trans  &trans  &trans  &trans  &trans  &trans
-&trans  &trans  &trans  &trans     &trans  &trans       &trans  &trans  &trans  &trans  &trans  &trans
-&trans  &trans  &trans  &trans     &trans  &trans       &trans  &trans  &trans  &trans  &trans  &trans
-                        &mkp LCLK  &trans  &mkp RCLK    &trans  &trans
+&out OUT_TOG    &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2  &trans        &bt BT_CLR  &bt BT_CLR  &ext_power EP_TOG  &bt BT_SEL 2  &bt BT_SEL 1  &bt BT_SEL 0  &kp LC(C)
+&studio_unlock  &trans        &trans        &trans        &trans        &trans      &kp C_PREV  &kp C_NEXT   &trans        &mkp MCLK     &trans        &kp LC(V)
+&bootloader    &trans        &mkp RCLK     &mo 4         &mkp LCLK     &mo 5       &mo 5       &mkp LCLK     &mo 4        &mkp RCLK     &trans        &bootloader
+                                     &mo 5  &mkp LCLK   &mkp RCLK     &mkp RCLK   &mkp LCLK
             >;
         };
 
         SCROLL {
             bindings = <
+&trans  &trans  &trans     &trans     &trans     &trans    &trans     &trans     &trans     &trans     &trans  &trans
+&trans  &trans  &trans     &mkp MCLK  &trans     &trans    &trans     &trans     &mkp MCLK  &trans     &trans  &trans
+&trans  &trans  &mkp RCLK  &trans     &mkp LCLK  &trans    &trans     &mkp LCLK  &trans     &mkp RCLK  &trans  &trans
+                           &trans     &mkp LCLK  &mkp RCLK &mkp RCLK  &mkp LCLK
+            >;
+        };
+
+        FINE {
+            bindings = <
+&kp C_VOLUME_DOWN  &kp C_VOLUME_UP  &kp C_MUTE  &kp C_PLAY_PAUSE  &kp C_BRIGHTNESS_DEC  &kp C_BRIGHTNESS_INC  &kp C_SLEEP  &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans     &mkp MCLK  &trans     &trans    &trans     &trans     &mkp MCLK  &trans     &trans  &trans
+&trans  &trans  &mkp RCLK  &trans     &mkp LCLK  &trans    &trans     &mkp LCLK  &trans     &mkp RCLK  &trans  &trans
+                           &trans     &mkp LCLK  &mkp RCLK &mkp RCLK  &mkp LCLK
+            >;
+        };
+
+        AUTO_MOUSE {
+            bindings = <
 &trans  &trans  &trans  &trans  &trans  &trans    &trans  &trans  &trans  &trans  &trans  &trans
 &trans  &trans  &trans  &trans  &trans  &trans    &trans  &trans  &trans  &trans  &trans  &trans
 &trans  &trans  &trans  &trans  &trans  &trans    &trans  &trans  &trans  &trans  &trans  &trans
-                        &trans  &trans  &trans    &trans  &trans
+                        &mkp LCLK  &trans  &mkp RCLK  &trans  &trans
             >;
         };
     };
